@@ -26,6 +26,8 @@ City *getCity(List *l, char *name);
 
 status addNeighbour(List *l, City *city, char *name, int distance);
 
+void displayAllCities(List *l);
+
 void calculateDistanceToGoal(List *l, City *start, City *goal);
 
 #endif

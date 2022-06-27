@@ -32,4 +32,5 @@ int main () {
   if (!city) return 1;
   status res = addNeighbour(l, city, "Nancy", 534);
   if (res != OK) return 1;
+  displayAllCities(l);
 }

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "map.h"
 
 City *addCity(List *l, char *name, int latitude, int longitude)
@@ -78,4 +79,15 @@ status addNeighbour(List *l, City *city, char *name, int distance)
   if (res != OK)
     return ERRALLOC;
   return OK;
+}
+
+void displayAllCities(List *l)
+{
+  Node *node = l->head;
+  while (node)
+  {
+    City *city = node->val;
+    printf("%s\n", city->name);
+    node = node->next;
+  }
 }
