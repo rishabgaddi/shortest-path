@@ -1,227 +1,261 @@
-/*********************
- * List.c
- * Author: Rishab Gaddi and Maheshbhai Chauhan
- * Date: 2018-11-19
- *********************/
+/********************************************************************
+ *
+ * $Id: List.c 2135 2019-09-16 07:22:19Z phil $
+ *
+ ********************************************************************/
+/** 
+ *
+ * Creation of a generic (simply linked) List structure.
+ *
+ * To create a list, one must provide two functions (one function to
+ * compare / order elements, one function to display them). Unlike arrays,
+ * indices begins with 1.
+ *
+ ********************************************************************/
 
-#include "List.h"
 #include <stdio.h>
+#include "List.h"
 
-List *newList(compFun comp, prFun pr)
-{
-  List *l = malloc(sizeof(List));
-  if (!l)
-    return 0;
-  l->nelts = 0;
-  l->head = 0;
-  l->comp = comp;
-  l->pr = pr;
+/** stores the list of available Nodes instead of deallocating / reallocating 
+ * them all the time */
+static Node* available = 0;
+
+/* create a new, empty list */
+List * newList (compFun comp, prFun pr) {
+  List * l;
+  l = (List*) malloc(sizeof(List));
+  if (! l) return 0;
+  l->nelts  = 0;
+  l->head   = 0;
+  l->comp   = comp;
+  l->pr     = pr;
   return l;
 }
 
-void delList(List *l)
-{
-  Node *n = l->head;
-  while (n)
-  {
-    Node *tmp = n;
-    n = n->next;
-    free(tmp);
+/* destroy the list by deallocating used memory */
+void delList (List* l) {
+  Node * tmp = l->head;
+  while (tmp) {
+    l->head = tmp->next;
+    tmp->next = available;
+    available = tmp;
+    tmp = l->head;
   }
+
+  /* tmp == 0 : list is empty */
+
+  l->head = 0;
+  l->nelts = 0;
   free(l);
 }
 
-status nthInList(List *l, int n, void *res)
-{
-  Node *node = l->head;
-  int i = 1;
-  while (node && i < n)
-  {
-    node = node->next;
-    i++;
-  }
-  if (!node)
+/* return  the Nth element of the list if exists */
+status nthInList (List* l, int pos, void* res) {
+  Node * tmp = l->head;
+  if (pos <= 0 || pos > l->nelts)
     return ERRINDEX;
-  *(void **)res = node->val;
+  while (pos-- > 1) tmp = tmp->next;
+  *(void**)res = tmp->val;
   return OK;
 }
 
-status addListAt(List *l, int n, void *e)
-{
-  Node *node = malloc(sizeof(Node));
-  if (!node)
-    return ERRALLOC;
-  node->val = e;
-  if (n == 0)
-  {
-    node->next = l->head;
-    l->head = node;
-  }
-  else
-  {
-    Node *prev = l->head;
-    int i = 1;
-    while (prev && i < n)
-    {
-      prev = prev->next;
-      i++;
-    }
-    if (!prev)
-      return ERRINDEX;
-    node->next = prev->next;
-    prev->next = node;
-  }
+/* Insert element at a given position in the list */
+status addListAt (List* l, int pos, void* elt) {
+  if (pos <= 0 || pos > l->nelts+1)
+    return ERRINDEX;
+ 
+  /* get a new Node and increment length */
+  Node * toAdd = available;
+  if (!toAdd) toAdd = (Node*) malloc(sizeof(Node));
+  else available = available->next;
+  if (!toAdd) return ERRALLOC;
   l->nelts++;
+  toAdd->val = elt;
+  
+  /* if pos is 1, must change list head */
+  if (pos == 1) {
+    toAdd->next = l->head;
+    l->head = toAdd;
+  }
+  
+  /* otherwise we need a temporary pointer */
+  else {
+    Node * tmp = l->head;
+    
+    /* tmp points to the predecessor */
+    while (pos-- > 2) tmp = tmp->next;
+    
+    /* actual insertion */
+    toAdd->next = tmp->next;
+    tmp->next = toAdd;
+  }
+
   return OK;
 }
 
-status remFromListAt(List *l, int n, void *res)
-{
-  Node *prev = l->head;
-  int i = 1;
-  while (prev && i < n)
-  {
-    prev = prev->next;
-    i++;
+/* remove the element located at a given position in list */
+status remFromListAt    (List* l,int pos, void* res) {
+  Node *toRem = l->head;
+
+  if (pos <= 0 || pos > l->nelts) return ERRINDEX;
+  
+  /* particular case: must remove list head */
+
+  if (pos == 1)
+    l->head = toRem->next;
+  
+  /* otherwise point to predecessor to change links */
+  else {
+    Node * prec = toRem;
+    while (pos-- > 2) prec = prec->next;
+    toRem = prec->next;
+    prec->next = toRem->next;
   }
-  if (!prev)
-    return ERRINDEX;
-  Node *tmp = prev->next;
-  prev->next = tmp->next;
-  *(void **)res = tmp->val;
-  free(tmp);
+  
+  *(void**)res = toRem->val;
+  toRem->next = available;
+  available = toRem;
   l->nelts--;
   return OK;
 }
 
-status remFromList(List *l, void *e)
-{
-  if (!l->comp)
-    return ERRUNABLE;
-  Node *prev = l->head;
-  while (prev)
-  {
-    if (l->comp(prev->val, e) == 0)
-    {
-      Node *tmp = prev->next;
-      prev->next = tmp->next;
-      free(tmp);
-      l->nelts--;
-      return OK;
-    }
-    prev = prev->next;
-  }
-  return ERRABSENT;
-}
+/* remove given element from given list */
+status remFromList (List* l, void* elt) {
+  Node * prec = l->head, *toRem = 0;
 
-status displayList(List *l)
-{
-  if (!l->pr)
-    return ERRUNABLE;
-  Node *node = l->head;
-  printf("[ ");
-  while (node)
-  {
-    l->pr(node->val);
-    node = node->next;
-    if (node)
-      printf(" ");
-  }
-  printf(" ]\n");
+  if (l->comp == 0) return ERRUNABLE;
+  if (l->nelts == 0) return ERRABSENT;
+  if (!(l->comp)(elt,prec->val)) return remFromListAt(l,1,&(prec->val));
+  
+  /* points to the predecessor */
+
+  while (prec->next &&  (l->comp)(elt,prec->next->val))
+    {
+      prec = prec->next;
+    }
+  
+  /* here
+   *  - either we point to the last element
+   *  - or next one is the one to remove!
+   */
+  
+  if (! prec->next) return ERRABSENT;
+
+  toRem = prec->next;
+  prec->next = toRem->next;
+  toRem->next = available;
+  available = toRem;
+  l->nelts--;
+
   return OK;
 }
 
-void forEach(List *l, void (*f)(void *))
-{
-  Node *node = l->head;
-  while (node)
-  {
-    f(node->val);
-    node = node->next;
+/* display list elements as "[ e1 ... eN ]" */
+status displayList (List * l ) {
+  Node * tmp = l->head;
+  if (l->pr == 0) return ERRUNABLE;
+  printf("[ ");
+  while (tmp) {
+    (l->pr)(tmp->val);
+    putchar(' ');
+    tmp = tmp->next;
+  }
+  putchar(']');
+  return OK;
+}
+
+/* sequencially call given function with each element of given list */
+void forEach (List* l, void(*f)(void*)) {
+  Node * tmp = l->head;
+  while (tmp) {
+    (*f)(tmp->val);
+    tmp = tmp->next;
   }
 }
 
-int lengthList(List *l)
-{
-  return l->nelts;
+/* compute and return the number of elements in given list */
+int lengthList (List* l) { return l->nelts; }
+
+
+/** private function to get the node preceding the one we're looking for 
+ * @param e the searched element
+ * @return 0 if element is not found (typically, list is empty)
+ * @return 1 if element is head of list
+ * @return a pointer to the predecessor otherwise
+ */
+static Node* previous(List* l, void* e) {
+  Node * prec = l->head;
+  if (l->nelts == 0) return 0;
+  if (!(l->comp)(e,prec->val)) return (Node*)1;
+  
+  /* prec must address element prior to the one to remove */
+  while (prec->next && (l->comp)(e,prec->next->val))
+    prec = prec->next;
+  
+  /* here, 
+   *  - either we address nothing (no such element)
+   *  - or we address the element prior to the one we're looking for
+   */
+  return prec;
 }
 
-status addList(List *l, void *e)
-{
-  if (!l->comp)
-    return ERRUNABLE;
-  Node *node = malloc(sizeof(Node));
-  if (!node)
-    return ERRALLOC;
-  node->val = e;
-  Node *prev = l->head;
-  if (!prev)
-  {
-    node->next = 0;
-    l->head = node;
-    l->nelts++;
-    return OK;
-  }
-  while (prev)
-  {
-    if (l->comp(prev->val, e) == 0)
-    {
-      free(node);
-      return ERREXIST;
-    }
-    if (l->comp(prev->val, e) > 0)
-    {
-      node->next = prev->next;
-      prev->next = node;
-      l->nelts++;
-      return OK;
-    }
-    if (!prev->next)
-      break;
-  }
-  node->next = 0;
-  prev->next = node;
+/* add given element to given list according to compFun function */
+status addList (List* l, void* e) {
+  Node * prec = l->head, *toAdd;
+  
+  if (l->comp == 0) return ERRUNABLE;
+
+  /* add to the head if list is empty, if no comparison function is given
+   * or if e < head element
+   */
+  if (l->nelts == 0 || (l->comp)(e,l->head->val)<0)
+    return addListAt(l,1,e);
+
+  /* otherwise, get predecessor and link new element just after it */
+  while (prec && prec->next && (l->comp)(prec->next->val,e)<0)
+    prec = prec->next;
+
+  toAdd = available;
+  if (!toAdd) toAdd = (Node*) malloc(sizeof(Node));
+  else available = available->next;
+  if (!toAdd) return ERRALLOC;
+  toAdd->next = prec->next;
+  toAdd->val = e;
+  prec->next = toAdd;
   l->nelts++;
   return OK;
 }
 
-Node *isInList(List *l, void *e)
-{
-  Node *node = l->head;
-  if (!node)
-    return 0;
-  if (l->comp(node->val, e) == 0)
-    return node;
-  while (node->next)
-  {
-    if (l->comp(node->next->val, e) == 0)
-      return node->next;
-    node = node->next;
+/* test whether the list contains given element */
+Node* isInList (List* l, void* e) {
+  Node * prec = previous(l,e);
+  if (!prec) return 0;
+  if (prec == (Node*) 1) return (Node*)1;
+  if (prec->next == 0) return 0;
+  if (!(l->comp)(e,prec->next->val))
+    return prec;
+  return 0;
+}
+
+/* return the first element in l that matches f, or 0 */
+void* firstThat (List* l,int(*f)(void*)) {
+  Node* n = l->head;
+  while (n) {
+    if (f(n->val))
+      return n->val;
+    n = n->next;
   }
   return 0;
 }
 
-void *firstThat(List *l, int (*f)(void *))
-{
-  Node *node = l->head;
-  while (node)
-  {
-    if (f(node->val))
-      return node->val;
-    node = node->next;
+/* return the list of all elements in l that match f */
+List* allThat (List* l, int(*f)(void*)) {
+  List* res = newList(l->comp, l->pr);
+  Node* n = l->head;
+  while (n) {
+    if (f(n->val))
+      addListAt(res,res->nelts+1,n->val);
+    n = n->next;
   }
-  return 0;
-}
-
-List *allThat(List *l, int (*f)(void *))
-{
-  List *resultList = newList(l->comp, l->pr);
-  Node *node = l->head;
-  while (node)
-  {
-    if (f(node->val))
-      addList(resultList, node->val);
-    node = node->next;
-  }
-  return resultList;
+  return res;
 }
