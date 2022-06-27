@@ -1,19 +1,24 @@
+#include <string.h>
 #include "map.h"
 
-City *addCity(List *l, char *name, int latitude, int longitude) {
+City *addCity(List *l, char *name, int latitude, int longitude)
+{
   City *city = getCity(l, name);
   if (!city)
   {
-    city = (City*) malloc(sizeof(City));
-    if (!city) return 0;
-    city->name = (char*) malloc(strlen(name)+1);
-    if (!city->name) {
+    city = (City *)malloc(sizeof(City));
+    if (!city)
+      return 0;
+    city->name = (char *)malloc(strlen(name) + 1);
+    if (!city->name)
+    {
       free(city);
       return 0;
     }
     strcpy(city->name, name);
     city->neighbors = newList(l->comp, l->pr);
-    if (!city->neighbors) {
+    if (!city->neighbors)
+    {
       free(city->name);
       free(city);
       return 0;
@@ -24,7 +29,8 @@ City *addCity(List *l, char *name, int latitude, int longitude) {
     city->distToGoal = 0;
     city->prev = 0;
     status res = addList(l, city);
-    if (res != OK) {
+    if (res != OK)
+    {
       delList(city->neighbors);
       free(city->name);
       free(city);
@@ -39,11 +45,13 @@ City *addCity(List *l, char *name, int latitude, int longitude) {
   return city;
 }
 
-City *getCity(List *l, char *name) {
+City *getCity(List *l, char *name)
+{
   if (l->nelts == 0)
     return 0;
   Node *node = l->head;
-  while (node) {
+  while (node)
+  {
     City *city = node->val;
     if (strcmp(city->name, name) == 0)
       return city;
@@ -58,7 +66,8 @@ status addNeighbour(List *l, City *city, char *name, int distance)
   if (!neighbor)
     return ERRALLOC;
   City *neighborCity = getCity(l, name);
-  if (!neighborCity) {
+  if (!neighborCity)
+  {
     neighborCity = addCity(l, name, 0, 0);
     if (!neighborCity)
       return ERRALLOC;
