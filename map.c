@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "map.h"
 
 City *addCity(List *l, char *name, int latitude, int longitude)
@@ -88,6 +89,45 @@ void displayAllCities(List *l)
   {
     City *city = node->val;
     printf("%s\n", city->name);
+    node = node->next;
+  }
+}
+
+void displayNeighbours(List *l, char *name)
+{
+  City *city = getCity(l, name);
+  if (!city)
+    return;
+  Node *node = city->neighbors->head;
+  while (node)
+  {
+    Neighbor *neighbor = node->val;
+    printf("%s %d\n", neighbor->city->name, neighbor->distance);
+    node = node->next;
+  }
+}
+
+void calculateDistanceToGoal(List *l, char *destinationCity)
+{
+  City *destCity = getCity(l, destinationCity);
+  if (!destCity)
+    return;
+  Node *node = l->head;
+  while (node)
+  {
+    City *currentCity = node->val;
+    currentCity->distToGoal = abs(currentCity->latitude - destCity->latitude) + abs(currentCity->longitude - destCity->longitude);
+    node = node->next;
+  }
+}
+
+void displayAllCitiesWithDetails(List *l)
+{
+  Node *node = l->head;
+  while (node)
+  {
+    City *city = node->val;
+    printf("%s %d %d %d %d\n", city->name, city->latitude, city->longitude, city->distFromStart, city->distToGoal);
     node = node->next;
   }
 }

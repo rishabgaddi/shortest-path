@@ -28,6 +28,10 @@ status addNeighbour(List *l, City *city, char *name, int distance);
 
 void displayAllCities(List *l);
 
-void calculateDistanceToGoal(List *l, City *start, City *goal);
+void displayNeighbours(List *l, char *name);
+
+void calculateDistanceToGoal(List *l, char *destinationCity);
+
+void displayAllCitiesWithDetails(List *l);
 
 #endif

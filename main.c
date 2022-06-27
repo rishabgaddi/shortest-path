@@ -10,8 +10,9 @@
  * @return 0 if s1 equals s2
  * @return >0 otherwise
  *************************************************************/
-static int compString (void * s1, void * s2) {
-  return strcmp((char*)s1, (char*)s2);
+static int compString(void *s1, void *s2)
+{
+  return strcmp((char *)s1, (char *)s2);
 }
 
 /*************************************************************
@@ -19,18 +20,29 @@ static int compString (void * s1, void * s2) {
  * @param s the string to display
  *************************************************************
  */
-static void prString(void * s) {
-  printf("%s",(char*)s);
+static void prString(void *s)
+{
+  printf("%s", (char *)s);
 }
 
-int main () {
+int main()
+{
   /* list creation */
-  List* l = newList(compString,prString);
-  if (!l) return 1;
+  List *l = newList(compString, prString);
+  if (!l)
+    return 1;
 
   City *city = addCity(l, "Calais", -200, 1200);
-  if (!city) return 1;
+  if (!city)
+    return 1;
   status res = addNeighbour(l, city, "Nancy", 534);
-  if (res != OK) return 1;
+  if (res != OK)
+    return 1;
+  city = addCity(l, "Nancy", 510, 600);
+  if (!city)
+    return 1;
   displayAllCities(l);
+  displayNeighbours(l, "Calais");
+  calculateDistanceToGoal(l, "Nancy");
+  displayAllCitiesWithDetails(l);
 }
