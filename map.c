@@ -64,7 +64,8 @@ City *getCity(List *l, char *name)
 
 status addNeighbour(List *l, City *city, char *name, int distance)
 {
-  Neighbor *neighbor = malloc(sizeof(neighbor));
+  // Neighbor *neighbor = malloc(sizeof(neighbor));
+  Neighbor *neighbor = (Neighbor *)malloc(sizeof(Neighbor));
   if (!neighbor)
     return ERRALLOC;
   City *neighborCity = getCity(l, name);
@@ -102,7 +103,7 @@ void displayNeighbours(List *l, char *name)
   while (node)
   {
     Neighbor *neighbor = node->val;
-    printf("%s %d\n", neighbor->city->name, neighbor->distance);
+    printf("City: %s, Distance: %d\n", neighbor->city->name, neighbor->distance);
     node = node->next;
   }
 }
@@ -127,7 +128,24 @@ void displayAllCitiesWithDetails(List *l)
   while (node)
   {
     City *city = node->val;
-    printf("%s %d %d %d %d\n", city->name, city->latitude, city->longitude, city->distFromStart, city->distToGoal);
+    printf("City: %s\n", city->name);
+    printf("Latitude: %d\n", city->latitude);
+    printf("Longitude: %d\n", city->longitude);
+    printf("Distance from start: %d\n", city->distFromStart);
+    printf("Distance to goal: %d\n", city->distToGoal);
+    printf("Neighbours:\n");
+    displayNeighbours(l, city->name);
+    printf("----------------------------------------------------\n");
     node = node->next;
   }
+}
+
+/** Find and display the shortest path between two cities using A* algorithm.
+ * @param l the list of cities
+ * @param originCity the name of the city where the path starts
+ * @param destinationCity the name of the city where the path ends
+ */
+void shortestPath(List *l, char *originCity, char *destinationCity)
+{
+  calculateDistanceToGoal(l, destinationCity);
 }

@@ -34,4 +34,11 @@ void calculateDistanceToGoal(List *l, char *destinationCity);
 
 void displayAllCitiesWithDetails(List *l);
 
+/** Find and display the shortest path between two cities using A* algorithm.
+ * @param l the list of cities
+ * @param originCity the name of the city where the path starts
+ * @param destinationCity the name of the city where the path ends
+ */
+void shortestPath(List *l, char *originCity, char *destinationCity);
+
 #endif

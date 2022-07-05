@@ -32,17 +32,27 @@ int main()
   if (!l)
     return 1;
 
-  City *city = addCity(l, "Calais", -200, 1200);
-  if (!city)
-    return 1;
-  status res = addNeighbour(l, city, "Nancy", 534);
-  if (res != OK)
-    return 1;
-  city = addCity(l, "Nancy", 510, 600);
-  if (!city)
-    return 1;
-  displayAllCities(l);
-  displayNeighbours(l, "Calais");
-  calculateDistanceToGoal(l, "Nancy");
+  FILE *f = fopen("FRANCE.MAP", "r");
+  char name[255];
+  int latitude, longitude;
+  City *city;
+  while (fscanf(f, "%s %d %d", name, &latitude, &longitude) != EOF)
+  {
+    if (longitude != INT16_MAX) {
+      city = addCity(l, name, latitude, longitude);
+    } else {
+      status res = addNeighbour(l, city, name, latitude);
+      if (res != OK)
+        return 1;
+    }
+    latitude = 0;
+    longitude = INT16_MAX;
+  }
+  fclose(f);
+
+  printf("\n");
+  calculateDistanceToGoal(l, "Lyon");
+  printf("\n");
   displayAllCitiesWithDetails(l);
+  return 0;
 }
