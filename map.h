@@ -11,7 +11,7 @@ typedef struct City
   int longitude;
   int distFromStart;
   int distToGoal;
-  Node *prev;
+  struct City *prev;
 } City;
 
 typedef struct Neighbor
@@ -30,19 +30,19 @@ void displayAllCities(List *l);
 
 void displayNeighbours(List *l, char *name);
 
-void calculateInitialDistanceToGoal(List *l, char *destinationCity);
+void calculateHeuristicDistance(List *l, char *destinationCity);
 
 void displayAllCitiesWithDetails(List *l);
 
-City *getMin(List *l);
+void setInitialStartDistanceToMax(List *l);
 
-int getList(List *l, City *city);
+City *getMin(List *l);
 
 /** Find and display the shortest path between two cities using A* algorithm.
  * @param l the list of cities
  * @param originCity the name of the city where the path starts
  * @param destinationCity the name of the city where the path ends
  */
-void shortestPath(List *l, char *originCity, char *destinationCity);
+void findShortestPath(List *l, char *originCity, char *destinationCity);
 
 #endif

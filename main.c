@@ -38,7 +38,7 @@ int main()
   City *city;
   while (fscanf(f, "%s %d %d", name, &latitude, &longitude) != EOF)
   {
-    if (longitude != INT16_MAX) {
+    if (longitude != 9999) {
       city = addCity(l, name, latitude, longitude);
     } else {
       status res = addNeighbour(l, city, name, latitude);
@@ -46,9 +46,9 @@ int main()
         return 1;
     }
     latitude = 0;
-    longitude = INT16_MAX;
+    longitude = 9999;
   }
   fclose(f);
-  shortestPath(l, "Rennes", "Lyon");
+  findShortestPath(l, "Rennes", "Lyon");
   return 0;
 }
