@@ -145,7 +145,7 @@ City *getMin(List *l) {
   City *min = node->val;
   while (node) {
     City *city = node->val;
-    if (city->distToGoal < min->distToGoal)
+    if (city->distFromStart + city->distToGoal < min->distFromStart + min->distToGoal)
       min = city;
     node = node->next;
   }
@@ -171,10 +171,11 @@ int getList(List *l, City *city) {
  */
 void shortestPath(List *l, char *originCity, char *destinationCity)
 {
-  calculateInitialDistanceToGoal(l, destinationCity);
   City *origin = getCity(l, originCity);
   if (!origin)
     return;
+  calculateInitialDistanceToGoal(l, destinationCity);
+  displayAllCitiesWithDetails(l);
   origin->distFromStart = 0;
   origin->prev = 0;
   List *open = newList(l->comp, l->pr);
@@ -225,7 +226,7 @@ void shortestPath(List *l, char *originCity, char *destinationCity)
     {
       Neighbor *neighbor = node->val;
       City *neighborCity = neighbor->city;
-      if (getList(closed, neighborCity))
+      if (getList(closed, neighborCity) >= 0)
       {
         node = node->next;
         continue;
@@ -235,15 +236,12 @@ void shortestPath(List *l, char *originCity, char *destinationCity)
       {
         neighborCity->distFromStart = newDistFromStart;
         neighborCity->prev->val = current;
-        if (!getList(open, neighborCity))
+        res = addList(open, neighborCity);
+        if (res != OK)
         {
-          res = addList(open, neighborCity);
-          if (res != OK)
-          {
-            delList(open);
-            delList(closed);
-            return;
-          }
+          delList(open);
+          delList(closed);
+          return;
         }
       }
       node = node->next;
