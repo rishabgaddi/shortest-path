@@ -49,10 +49,6 @@ int main()
     longitude = INT16_MAX;
   }
   fclose(f);
-
-  printf("\n");
-  calculateDistanceToGoal(l, "Lyon");
-  printf("\n");
-  displayAllCitiesWithDetails(l);
+  shortestPath(l, "Rennes", "Lyon");
   return 0;
 }

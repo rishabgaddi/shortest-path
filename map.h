@@ -30,9 +30,13 @@ void displayAllCities(List *l);
 
 void displayNeighbours(List *l, char *name);
 
-void calculateDistanceToGoal(List *l, char *destinationCity);
+void calculateInitialDistanceToGoal(List *l, char *destinationCity);
 
 void displayAllCitiesWithDetails(List *l);
+
+City *getMin(List *l);
+
+int getList(List *l, City *city);
 
 /** Find and display the shortest path between two cities using A* algorithm.
  * @param l the list of cities
