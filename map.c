@@ -64,7 +64,6 @@ City *getCity(List *l, char *name)
 
 status addNeighbour(List *l, City *city, char *name, int distance)
 {
-  // Neighbor *neighbor = malloc(sizeof(neighbor));
   Neighbor *neighbor = (Neighbor *)malloc(sizeof(Neighbor));
   if (!neighbor)
     return ERRALLOC;
@@ -122,9 +121,11 @@ void calculateHeuristicDistance(List *l, char *destinationCity)
   }
 }
 
-void setInitialStartDistanceToMax(List *l) {
+void setInitialStartDistanceToMax(List *l)
+{
   Node *node = l->head;
-  while (node) {
+  while (node)
+  {
     City *city = node->val;
     city->distFromStart = 3000;
     node = node->next;
@@ -149,10 +150,12 @@ void displayAllCitiesWithDetails(List *l)
   }
 }
 
-City *getMin(List *l) {
+City *getMin(List *l)
+{
   Node *node = l->head;
   City *min = node->val;
-  while (node) {
+  while (node)
+  {
     City *city = node->val;
     if (city->distFromStart + city->distToGoal < min->distFromStart + min->distToGoal)
       min = city;
@@ -161,7 +164,45 @@ City *getMin(List *l) {
   return min;
 }
 
-void findShortestPath(List *l, char *originCity, char *destinationCity) {
+void printPath(List *l, City *city)
+{
+  City *current = city;
+  List *path = newList(l->comp, l->pr);
+  if (!path)
+  {
+    return;
+  }
+  status res = addList(path, current);
+  if (res != OK)
+  {
+    delList(path);
+    return;
+  }
+  while (current)
+  {
+    current = current->prev;
+    if (current)
+    {
+      res = addListAt(path, 1, current);
+      if (res != OK)
+      {
+        delList(path);
+        return;
+      }
+    }
+  }
+  Node *node = path->head;
+  while (node)
+  {
+    City *city = node->val;
+    printf("%s : (", city->name);
+    printf("%d km)\n", city->distFromStart);
+    node = node->next;
+  }
+}
+
+void findShortestPath(List *l, char *originCity, char *destinationCity)
+{
   City *origin = getCity(l, originCity);
   City *destination = getCity(l, destinationCity);
   if (!origin || !destination)
@@ -185,7 +226,8 @@ void findShortestPath(List *l, char *originCity, char *destinationCity) {
   calculateHeuristicDistance(l, destinationCity);
   setInitialStartDistanceToMax(l);
   origin->distFromStart = 0;
-  while (open->nelts > 0) {
+  while (open->nelts > 0)
+  {
     City *current = getMin(open);
     res = addList(closed, current);
     if (res != OK)
@@ -205,10 +247,12 @@ void findShortestPath(List *l, char *originCity, char *destinationCity) {
       break;
     Node *node1 = current->neighbors->head;
     // Add all neighbours to open list
-    while (node1) {
+    while (node1)
+    {
       Neighbor *neighbor = node1->val;
       City *neighborCity = neighbor->city;
-      if (isInList(open, neighborCity)) {
+      if (isInList(open, neighborCity))
+      {
         node1 = node1->next;
         continue;
       }
@@ -229,12 +273,15 @@ void findShortestPath(List *l, char *originCity, char *destinationCity) {
       int newDistance = current->distFromStart + neighbor->distance;
       if (newDistance > neighborCity->distFromStart)
       {
-        res = remFromList(open, neighborCity);
-        if (res != OK)
+        if (isInList(closed, neighborCity))
         {
-          delList(open);
-          delList(closed);
-          return;
+          res = remFromList(open, neighborCity);
+          if (res != OK)
+          {
+            delList(open);
+            delList(closed);
+            return;
+          }
         }
         node = node->next;
         continue;
@@ -254,12 +301,7 @@ void findShortestPath(List *l, char *originCity, char *destinationCity) {
       node = node->next;
     }
   }
-  City *current = destination;
-  while (current)
-  {
-    printf("%s\n", current->name);
-    current = current->prev;
-  }
+  printPath(l, destination);
   delList(open);
   delList(closed);
 }

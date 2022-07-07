@@ -38,6 +38,8 @@ void setInitialStartDistanceToMax(List *l);
 
 City *getMin(List *l);
 
+void printPath(List *l, City *city);
+
 /** Find and display the shortest path between two cities using A* algorithm.
  * @param l the list of cities
  * @param originCity the name of the city where the path starts

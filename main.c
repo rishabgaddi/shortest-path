@@ -34,19 +34,22 @@ int main()
 
   FILE *f = fopen("FRANCE.MAP", "r");
   char name[255];
-  int latitude, longitude;
+  int val1, val2;
   City *city;
-  while (fscanf(f, "%s %d %d", name, &latitude, &longitude) != EOF)
+  while (fscanf(f, "%s %d %d", name, &val1, &val2) != EOF)
   {
-    if (longitude != 9999) {
-      city = addCity(l, name, latitude, longitude);
-    } else {
-      status res = addNeighbour(l, city, name, latitude);
+    if (val2 != 9999)
+    {
+      city = addCity(l, name, val1, val2);
+    }
+    else
+    {
+      status res = addNeighbour(l, city, name, val1);
       if (res != OK)
         return 1;
     }
-    latitude = 0;
-    longitude = 9999;
+    val1 = 0;
+    val2 = 9999;
   }
   fclose(f);
   findShortestPath(l, "Rennes", "Lyon");
