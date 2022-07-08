@@ -32,6 +32,8 @@ static char* msg[] = {
   "Value already exists",
   "index out of bounds",
   "unable to perform operation",
+  "city not found",
+  "map not connected",
   
   "unknown error"
 };

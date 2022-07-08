@@ -45,6 +45,6 @@ void printPath(List *l, City *city);
  * @param originCity the name of the city where the path starts
  * @param destinationCity the name of the city where the path ends
  */
-void findShortestPath(List *l, char *originCity, char *destinationCity);
+status findShortestPath(List *l, char *originCity, char *destinationCity);
 
 #endif

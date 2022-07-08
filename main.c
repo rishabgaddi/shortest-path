@@ -25,17 +25,36 @@ static void prString(void *s)
   printf("%s", (char *)s);
 }
 
-int main()
+int main(int nWords, char *words[])
 {
-  /* list creation */
+  char source[255];
+  char dest[255];
+  if (nWords < 2) {
+    printf("Enter the name of the source city: ");
+    scanf("%s", source);
+    printf("Enter the name of the destination city: ");
+    scanf("%s", dest);
+  } else if (nWords < 3) {
+    strcpy(source, words[1]);
+    printf("Enter the name of the destination city: ");
+    scanf("%s", dest);
+  } else {
+    strcpy(source, words[1]);
+    strcpy(dest, words[2]);
+  }
   List *l = newList(compString, prString);
   if (!l)
     return 1;
 
   FILE *f = fopen("FRANCE.MAP", "r");
+  if (!f) {
+    fprintf(stderr, "Could not open file FRANCE.MAP\n");
+    return 2;
+  }
   char name[255];
   int val1, val2;
   City *city;
+  status res;
   while (fscanf(f, "%s %d %d", name, &val1, &val2) != EOF)
   {
     if (val2 != 9999)
@@ -44,7 +63,7 @@ int main()
     }
     else
     {
-      status res = addNeighbour(l, city, name, val1);
+      res = addNeighbour(l, city, name, val1);
       if (res != OK)
         return 1;
     }
@@ -52,6 +71,21 @@ int main()
     val2 = 9999;
   }
   fclose(f);
-  findShortestPath(l, "Rennes", "Lyon");
+  res = findShortestPath(l, source, dest);
+  if (res == ERRCITYNOTFOUND)
+  {
+    fprintf(stderr, "Error: %s\n", message(res));
+    return 1;
+  } 
+  else if (res == ERRMAPNOTCONNECTED)
+  {
+    fprintf(stderr, "Error: %s\n", message(res));
+    return 3;
+  }
+  else if (res)
+  {
+    fprintf(stderr, "Error: %s\n", message(res));
+    return 4;
+  }
   return 0;
 }

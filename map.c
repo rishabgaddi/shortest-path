@@ -201,27 +201,27 @@ void printPath(List *l, City *city)
   }
 }
 
-void findShortestPath(List *l, char *originCity, char *destinationCity)
+status findShortestPath(List *l, char *originCity, char *destinationCity)
 {
   City *origin = getCity(l, originCity);
   City *destination = getCity(l, destinationCity);
   if (!origin || !destination)
-    return;
+    return ERRCITYNOTFOUND;
   List *open = newList(l->comp, l->pr);
   if (!open)
-    return;
+    return ERRUNABLE;
   List *closed = newList(l->comp, l->pr);
   if (!closed)
   {
     delList(open);
-    return;
+    return ERRUNABLE;
   }
   status res = addList(open, origin);
   if (res != OK)
   {
     delList(open);
     delList(closed);
-    return;
+    return res;
   }
   calculateHeuristicDistance(l, destinationCity);
   setInitialStartDistanceToMax(l);
@@ -234,17 +234,22 @@ void findShortestPath(List *l, char *originCity, char *destinationCity)
     {
       delList(open);
       delList(closed);
-      return;
+      return res;
     }
     res = remFromList(open, current);
     if (res != OK)
     {
       delList(open);
       delList(closed);
-      return;
+      return res;
     }
     if (current == destination)
-      break;
+    {
+      printPath(l, current);
+      delList(open);
+      delList(closed);
+      return OK;
+    }
     Node *node1 = current->neighbors->head;
     // Add all neighbours to open list
     while (node1)
@@ -261,7 +266,7 @@ void findShortestPath(List *l, char *originCity, char *destinationCity)
       {
         delList(open);
         delList(closed);
-        return;
+        return res;
       }
       node1 = node1->next;
     }
@@ -280,7 +285,7 @@ void findShortestPath(List *l, char *originCity, char *destinationCity)
           {
             delList(open);
             delList(closed);
-            return;
+            return res;
           }
         }
         node = node->next;
@@ -293,7 +298,7 @@ void findShortestPath(List *l, char *originCity, char *destinationCity)
         {
           delList(open);
           delList(closed);
-          return;
+          return res;
         }
       }
       neighborCity->distFromStart = newDistance;
@@ -301,7 +306,12 @@ void findShortestPath(List *l, char *originCity, char *destinationCity)
       node = node->next;
     }
   }
+  if (destination->prev == NULL)
+  {
+    return ERRMAPNOTCONNECTED;
+  }
   printPath(l, destination);
   delList(open);
   delList(closed);
+  return OK;
 }
