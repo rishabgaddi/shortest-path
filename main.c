@@ -91,5 +91,6 @@ int main(int nWords, char *words[])
     fprintf(stderr, "Error: %s\n", message(res));
     return 5;
   }
+  delList(l);
   return 0;
 }
