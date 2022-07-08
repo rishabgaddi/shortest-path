@@ -1,3 +1,9 @@
+/**********************************************************
+ * main.c
+ * Author(s): Rishab Gaddi and Maheshbhai Chauhan
+ * ********************************************************
+ * Sample test program for the map.h and map.c files.
+ * ********************************************************/
 #include <stdio.h>
 #include <string.h>
 #include "map.h"
@@ -29,54 +35,52 @@ int main(int nWords, char *words[])
 {
   char source[255];
   char dest[255];
-  if (nWords < 2) {
+  /* Check for correct number of arguments */
+  /* If city names are not provided, ask for them */
+  if (nWords < 2)
+  {
     printf("Enter the name of the source city: ");
     scanf("%s", source);
     printf("Enter the name of the destination city: ");
     scanf("%s", dest);
-  } else if (nWords < 3) {
+  }
+  else if (nWords < 3)
+  {
     strcpy(source, words[1]);
     printf("Enter the name of the destination city: ");
     scanf("%s", dest);
-  } else {
+  }
+  else
+  {
     strcpy(source, words[1]);
     strcpy(dest, words[2]);
   }
+  /* Create a list to store the map */
   List *l = newList(compString, prString);
   if (!l)
-    return 1;
-
-  FILE *f = fopen("FRANCE.MAP", "r");
-  if (!f) {
-    fprintf(stderr, "Could not open file FRANCE.MAP\n");
+  {
+    fprintf(stderr, "Error: could not create list\n");
+    return 4;
+  }
+  /* Construct the map */
+  status res = constructMap(l, "FRANCE.MAP");
+  if (res == ERRFILENOTFOUND)
+  {
+    fprintf(stderr, "Error: %s\n", message(res));
     return 2;
   }
-  char name[255];
-  int val1, val2;
-  City *city;
-  status res;
-  while (fscanf(f, "%s %d %d", name, &val1, &val2) != EOF)
+  else if (res)
   {
-    if (val2 != 9999)
-    {
-      city = addCity(l, name, val1, val2);
-    }
-    else
-    {
-      res = addNeighbour(l, city, name, val1);
-      if (res != OK)
-        return 1;
-    }
-    val1 = 0;
-    val2 = 9999;
+    fprintf(stderr, "Error: %s\n", message(res));
+    return 5;
   }
-  fclose(f);
+  /* Find the shortest path */
   res = findShortestPath(l, source, dest);
   if (res == ERRCITYNOTFOUND)
   {
     fprintf(stderr, "Error: %s\n", message(res));
     return 1;
-  } 
+  }
   else if (res == ERRMAPNOTCONNECTED)
   {
     fprintf(stderr, "Error: %s\n", message(res));
@@ -85,7 +89,7 @@ int main(int nWords, char *words[])
   else if (res)
   {
     fprintf(stderr, "Error: %s\n", message(res));
-    return 4;
+    return 5;
   }
   return 0;
 }
